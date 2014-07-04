@@ -16,7 +16,7 @@ while ($token = next($tokens)) {
             if (is_array($token) 
                 && $token[0] == T_STRING 
                 && empty($name)) {
-                $name = $token[1];
+                $name = ucfirst($token[1]);
             }
         } while (!(is_string($token) && $token == '{') && $token = next($tokens));
     } elseif ($buffer) {

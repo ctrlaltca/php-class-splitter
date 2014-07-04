@@ -10,6 +10,8 @@ across multiple files. Requires the tokenizer extension.
 * FILE - path to a single PHP file containing multiple class definitions 
 * DEST - path to a directory to contain the new class files
 
+It now capitalises the first letter of class names.
+
 # License
 
 [MIT License](http://opensource.org/licenses/MIT)
