@@ -2,6 +2,7 @@
 <?php
 /*
  * Loop usage: find . -maxdepth 1 -name '*.php' -exec php php-class-splitter.php '{}' ';'
+ * Or:         find .  -name \*.php -exec ~/bin/php-class-splitter.php \{\} -p \;
  */
 function help($args)
 {
@@ -45,6 +46,11 @@ if ($argv[1] != '-p' && $argv[2] == '-p') {
 if ($argv[1] == '-p' && $argv[2] != '-p') {
     $file = $argv[2];
     $dest = dirname($file);
+}
+
+if (substr($file, 0, 1) == '-') {
+    help($argv);
+    die;
 }
 
 if (!file_exists($file)) {
