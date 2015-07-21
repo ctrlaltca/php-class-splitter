@@ -3,12 +3,6 @@
 /*
  * Loop usage: find . -maxdepth 1 -name '*.php' -exec php php-class-splitter.php '{}' ';'
  */
-if ($argc != 3) {
-    help($argv);
-    exit;
-}
-$file = $argv[1];
-$dest = rtrim($argv[2], '/');
 function help($args)
 {
     echo <<< EOM
@@ -23,8 +17,36 @@ across multiple files. Requires the tokenizer extension.
 * FILE - path to a single PHP file containing multiple class definitions
 * DEST - path to a directory to contain the new class files
 
+Use -p instead of DEST to create the generated files in the same directory
+as the original file.
+
 EOM;
 }
+
+if ($argc != 3) {
+    help($argv);
+    die;
+}
+$file = null;
+$dest = null;
+
+if ($argv[1] == '-p' && $argv[2] == '-p') {
+    help($argv);
+    die;
+}
+if ($argv[1] != '-p' && $argv[2] != '-p') {
+    $file = $argv[1];
+    $dest = rtrim($argv[2], '/');
+}
+if ($argv[1] != '-p' && $argv[2] == '-p') {
+    $file = $argv[1];
+    $dest = dirname($file);
+}
+if ($argv[1] == '-p' && $argv[2] != '-p') {
+    $file = $argv[2];
+    $dest = dirname($file);
+}
+
 if (!file_exists($file)) {
     die("Input file $file does not exist." . PHP_EOL);
 }
@@ -34,6 +56,7 @@ if (!file_exists($dest)) {
 if (!is_dir($dest)) {
     die("$dest is not a directory." . PHP_EOL);
 }
+
 echo $file." => ".$dest . PHP_EOL;
 $tokens = token_get_all(file_get_contents($file));
 $mainheader=null;
@@ -72,14 +95,16 @@ while ($token = next($tokens)) {
             $code .= $token[1];
         }
     } elseif ($mainheader === null && ($token[0] == T_COMMENT || $token[0] == T_DOC_COMMENT)) {
-        if (is_string($token))
+        if (is_string($token)) {
             $mainheader = $token;
-        else
+        } else {
             $mainheader = $token[1];
+        }
     } else {
-        if (is_string($token))
+        if (is_string($token)) {
             $code .= $token;
-        else
+        } else {
             $code .= $token[1];
+        }
     }
 }
