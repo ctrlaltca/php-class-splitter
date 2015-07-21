@@ -1,9 +1,39 @@
+#!/usr/bin/env php
 <?php
 /*
  * Loop usage: find . -maxdepth 1 -name '*.php' -exec php php-class-splitter.php '{}' ';'
-*/
+ */
+if ($argc != 3) {
+    help($argv);
+    exit;
+}
 $file = $argv[1];
-$dest = dirname($file);
+$dest = rtrim($argv[2], '/');
+function help($args)
+{
+    echo <<< EOM
+
+php $args[0] FILE DEST
+
+Splits a file containing multiple PHP classes up into multiple files with
+one class per file. Overwrites any existing files in the destination path
+with the same name, useful for handling redundant class definitions
+across multiple files. Requires the tokenizer extension.
+
+* FILE - path to a single PHP file containing multiple class definitions
+* DEST - path to a directory to contain the new class files
+
+EOM;
+}
+if (!file_exists($file)) {
+    die("Input file $file does not exist." . PHP_EOL);
+}
+if (!file_exists($dest)) {
+    die("$dest does not exist." . PHP_EOL);
+}
+if (!is_dir($dest)) {
+    die("$dest is not a directory." . PHP_EOL);
+}
 echo $file." => ".$dest . PHP_EOL;
 $tokens = token_get_all(file_get_contents($file));
 $mainheader=null;
@@ -17,8 +47,8 @@ while ($token = next($tokens)) {
         $braces = 1;
         do {
             $code .= is_string($token) ? $token : $token[1];
-            if (is_array($token) 
-                && $token[0] == T_STRING 
+            if (is_array($token)
+                && $token[0] == T_STRING
                 && empty($name)) {
                 $name = ucfirst($token[1]);
             }
